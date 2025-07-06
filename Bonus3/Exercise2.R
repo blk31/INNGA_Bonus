@@ -21,6 +21,18 @@ ReLU<-function(z)
   return(r)
 }
 
+printNNSolution<-function(parm)
+{
+  ni<-3; nh<-5; no<-2
+  npl1 <- (ni + 1) * nh 
+  W1<-matrix(parm[(1:npl1)], nrow=(ni+1), ncol=nh, byrow=TRUE)
+  cat("L1 (b|W)^T: \n")
+  print(W1) 
+  W2<-matrix(parm[npl1+(1:(length(parm)-npl1))], ncol=no, byrow=TRUE)
+  cat("L2 (b|W)^T: \n")
+  print(W2) 
+}
+
 #===================================Implementation of NN for Full Adder=============================================================================
 
 
@@ -43,7 +55,7 @@ numberOfNNParms<-function(topology)
   return(n)
 }
 
-NNAdder352 <- function(parm, data) {
+NNAdder352 <- function(parm, data, sigmoid = TRUE) {
   ni <- 3
   nh <- 5
   no <- 2
@@ -57,9 +69,13 @@ NNAdder352 <- function(parm, data) {
   W2 <- matrix(parm[(npl1 + 1):length(parm)], nrow = nh + 1, ncol = no, byrow = TRUE)
   L2 <- i2 %*% W2
   
-  # Use sigmoid output for probability
-  return(1 / (1 + exp(-L2)))
+  if (sigmoid) {
+    return(1 / (1 + exp(-L2)))  # probabilities for classification
+  } else {
+    return(L2)  # raw output for regression (R²)
+  }
 }
+
 
 RsquareAdder <- function(res, data) {
   sum((res - data[, 4:5])^2)
@@ -73,7 +89,7 @@ envAdderNN <- function() {
   self$lb <- function() {rep(-1, numberOfNNParms(c(3, 5, 2)))}
   self$ub <- function() {rep(1, numberOfNNParms(c(3, 5, 2)))}
   self$f <- function(parm, gene=0, lF=0) {
-    RsquareAdder(NNAdder352(parm, adderData), adderData)
+    RsquareAdder(NNAdder352(parm, adderData, sigmoid=TRUE), adderData)
   }
   # early stopping condition 
   self$terminate <- function(solution) {
@@ -85,8 +101,19 @@ envAdderNN <- function() {
 }
 
 p <- envAdderNN()
-t1 <- xegaRun(penv = p, generations = 500, popsize = 100, 
+t1 <- xegaRun(penv = p, generations = 1000, popsize = 250, 
               evalmethod = "Deterministic", max = FALSE, verbose = 2)
+
+# Print solutions
+printNNSolution(t1$solution$phenotype)
+
+s<-NNAdder352(t1$solution$phenotype, adderData)
+cat("The activation values for the xor data set:\n")
+print(s)
+
+cat("Fitness:", t1$solution$fitness, "Better than 0.5? \n")
+s1<-NNAdder352(t1$solution$phenotype, adderData)>0.5
+print(s1)
 
 #===================================NNs with negative log-likelihood loss function =============================================================================
 
@@ -107,7 +134,7 @@ envAdderNN_logloss <- function() {
   self$lb <- function() {rep(-1, numberOfNNParms(c(3, 5, 2)))}
   self$ub <- function() {rep(1, numberOfNNParms(c(3, 5, 2)))}
   self$f <- function(parm, gene=0, lF=0) {
-    NLLLoss(NNAdder352(parm, adderData), adderData)
+    NLLLoss(NNAdder352(parm, adderData, sigmoid=TRUE), adderData)
   }
   # early stopping condition 
   self$terminate <- function(solution) {
@@ -119,11 +146,26 @@ envAdderNN_logloss <- function() {
 }
 
 p_logloss<- envAdderNN_logloss()
-t1_logloss <- xegaRun(penv = p, generations = 500, popsize = 100, 
+t1_logloss <- xegaRun(penv = p_logloss, generations = 1000, popsize = 100, 
               evalmethod = "Deterministic", max = FALSE, verbose = 2)
+
+printNNSolution(t1_logloss$solution$phenotype)
+
+s<-NNAdder352(t1_logloss$solution$phenotype, adderData)
+cat("The activation values for the xor data set:\n")
+print(s)
+
+cat("Fitness:", t1_logloss$solution$fitness, "Better than 0.5? \n")
+s1<-NNAdder352(t1_logloss$solution$phenotype, adderData)>0.5
+print(s1)
 
 # ------------XOR-----------
 
+NLLLoss <- function(pred, data) {
+  y <- data[, 3]
+  epsilon <- 1e-10
+  -sum(y * log(pred + epsilon) + (1 - y) * log(1 - pred + epsilon))
+}
 
 
 xorData<-matrix(c(0, 0, 0,
@@ -158,7 +200,7 @@ NNXOR231<-function(parm, data)
 }
 
 
-printNNSolution231<-function(parm)
+printNNSolution<-function(parm)
 {
   ni<-2; nh<-3; no<-1
   npl1<-(1+2)*3
@@ -198,18 +240,54 @@ envXORNN231_logloss<-function()
 p_xor_logloss<-envXORNN231_logloss()
 
 # Run GA
-t1_xor_logloss<-xegaRun(penv=p, generations=500, popsize=100, 
+t1_xor_logloss<-xegaRun(penv=p_xor_logloss, generations=500, popsize=100, 
             evalmethod="Deterministic",  
             max=FALSE, verbose=2)
 
 # Print solutions
-printNNSolution231(t1$solution$phenotype)
+printNNSolution(t1_xor_logloss$solution$phenotype)
 
-s<-NNXOR231(t1$solution$phenotype, xorData)
+s<-NNXOR231(t1_xor_logloss$solution$phenotype, xorData)
 cat("The activation values for the xor data set:\n")
 print(s)
 
-cat("Fitness:", t1$solution$fitness, "Better than 0.5? \n")
-s1<-NNXOR231(t1$solution$phenotype, xorData)>0.5
+cat("Fitness:", t1_xor_logloss$solution$fitness, "Better than 0.5? \n")
+s1<-NNXOR231(t1_xor_logloss$solution$phenotype, xorData)>0.5
 print(s1)
 
+
+##===================================Compare the resullts =============================================================================
+
+# Full adder with r2: 
+#
+#1,] FALSE FALSE
+#[2,]  TRUE FALSE
+#[3,]  TRUE FALSE
+#[4,] FALSE  TRUE
+#[5,]  TRUE FALSE
+#6,] FALSE  TRUE
+#[7,] FALSE  TRUE
+#[8,] FALSE  TRUE
+#
+#
+#Full adder with neg. log likelihood
+#
+#
+#FALSE FALSE
+#[2,]  TRUE FALSE
+#[3,]  TRUE FALSE
+#[4,] FALSE  TRUE
+#[5,]  TRUE FALSE
+#[6,] FALSE  TRUE
+#[7,]  TRUE  TRUE
+#[8,] FALSE  TRUE
+#
+#
+#] FALSE
+#[2,]  TRUE
+#[3,]  TRUE
+#[4,] FALSE
+#
+#
+#
+#
