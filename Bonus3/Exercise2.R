@@ -255,6 +255,12 @@ cat("Fitness:", t1_xor_logloss$solution$fitness, "Better than 0.5? \n")
 s1<-NNXOR231(t1_xor_logloss$solution$phenotype, xorData)>0.5
 print(s1)
 
+##===================================Topology  =============================================================================
+
+# Full Adder more complex problem. Theoretically two hidden layers would be better because then you could model sum as two consecutive XOR functions
+# first checking that sum is only one if one or three inputs are one. To keep to the implemantation we have added a lot more neurons to adjust for the complexity
+# Unfortunately even with top = (3, 25, 2) we could not get a perfect result. The hardest to get is the case when all 3 inputs are 1.
+# Everything else works fine
 
 ##===================================Compare the resullts =============================================================================
 
