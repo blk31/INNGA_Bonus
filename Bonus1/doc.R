@@ -1,5 +1,5 @@
 library(xega)
-source("F.R")
+source("Bonus1/F.R")
 
 # print("F1")
 # f1 <- F1()

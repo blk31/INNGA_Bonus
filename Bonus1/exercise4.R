@@ -1,5 +1,5 @@
 library(xega)
-source("F.R")
+source("Bonus1/F.R")
 
 f2 <- F2()
 generations <- c(10, 100, 1000)

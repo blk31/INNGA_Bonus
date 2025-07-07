@@ -1,4 +1,4 @@
-source("knapsack_env.R")
+source("Bonus2/knapsack_env.R")
 library(xega)
 
 values <- c(48, 30, 42, 36, 22, 43, 18, 24, 36, 29, 30, 25, 19, 41, 34, 32, 27, 24, 18) # list of values

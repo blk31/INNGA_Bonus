@@ -1,10 +1,10 @@
 library(TSP)
 library(xega)
 library(xegaSelectGene)
-source("newTSP_bin.R")
+source("Bonus2/newTSP_bin.R")
 
 # load data
-data <- read_TSPLIB("ftv47.atsp")
+data <- read_TSPLIB("Bonus2/ftv47.atsp")
 D <- as.matrix(data)
 
 # create asymmetric TSP
