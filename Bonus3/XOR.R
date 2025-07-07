@@ -2,9 +2,9 @@ library(xega)
 
 # Data for the xor problem.
 xorData<-matrix(c(0, 0, 0,
-                  0, 1, 1, 
+                  0, 1, 1,
                   1, 0, 1,
-                  1, 1, 0), 
+                  1, 1, 0),
                 nrow=4, ncol=3, byrow=TRUE)
 
 # An (optimal) parameter set for solving the xor problem with a (2, 3, 1) NN.
