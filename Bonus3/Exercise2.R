@@ -9,7 +9,6 @@ numberOfNNParms<-function(topology)
 }
 
 
-#' 
 rndParms<-function(n, lb=-1, ub=1)
 {   return(lb+runif(n)*(ub-lb)) }
 
@@ -35,7 +34,7 @@ printNNSolution<-function(parm)
 
 #===================================Implementation of NN for Full Adder=============================================================================
 
-
+top <-c(3, 25, 2)
 adderData <- matrix(c(
   0, 0, 0, 0, 0,
   0, 0, 1, 1, 0,
@@ -84,10 +83,10 @@ RsquareAdder <- function(res, data) {
 envAdderNN <- function() {
   self <- list()
   self$name <- function() {"AdderNN352"}
-  self$bitlength <- function() {rep(10, numberOfNNParms(c(3, 5, 2)))} #hab hier auch mal bitlength 10 angenommen wie in XOR, passt das? 
+  self$bitlength <- function() {rep(10, numberOfNNParms(top))} #hab hier auch mal bitlength 10 angenommen wie in XOR, passt das? 
   self$genelength <- function() {sum(self$bitlength())}
-  self$lb <- function() {rep(-1, numberOfNNParms(c(3, 5, 2)))}
-  self$ub <- function() {rep(1, numberOfNNParms(c(3, 5, 2)))}
+  self$lb <- function() {rep(-1, numberOfNNParms(top))}
+  self$ub <- function() {rep(1, numberOfNNParms(top))}
   self$f <- function(parm, gene=0, lF=0) {
     RsquareAdder(NNAdder352(parm, adderData, sigmoid=TRUE), adderData)
   }
@@ -115,6 +114,12 @@ cat("Fitness:", t1$solution$fitness, "Better than 0.5? \n")
 s1<-NNAdder352(t1$solution$phenotype, adderData)>0.5
 print(s1)
 
+# Full Adder more complex problem. Theoretically two hidden layers would be better because then you could model sum as two consecutive XOR functions
+# first checking that sum is only one if one or three inputs are one. To keep to the implemantation we have added a lot more neurons to adjust for the complexity
+# Unfortunately even with top = (3, 25, 2) we could not get a perfect result. The hardest to get is the case when all 3 inputs are 1.
+# Everything else works fine
+
+
 #===================================NNs with negative log-likelihood loss function =============================================================================
 
 # ------------Full Adder-----------
@@ -129,10 +134,10 @@ NLLLoss <- function(pred, data) {
 envAdderNN_logloss <- function() {
   self <- list()
   self$name <- function() {"AdderNN352"}
-  self$bitlength <- function() {rep(10, numberOfNNParms(c(3, 5, 2)))} #hab hier auch mal bitlength 10 angenommen wie in XOR, passt das? 
+  self$bitlength <- function() {rep(10, numberOfNNParms(top))} #hab hier auch mal bitlength 10 angenommen wie in XOR, passt das? 
   self$genelength <- function() {sum(self$bitlength())}
-  self$lb <- function() {rep(-1, numberOfNNParms(c(3, 5, 2)))}
-  self$ub <- function() {rep(1, numberOfNNParms(c(3, 5, 2)))}
+  self$lb <- function() {rep(-1, numberOfNNParms(top))}
+  self$ub <- function() {rep(1, numberOfNNParms(top))}
   self$f <- function(parm, gene=0, lF=0) {
     NLLLoss(NNAdder352(parm, adderData, sigmoid=TRUE), adderData)
   }
@@ -146,7 +151,7 @@ envAdderNN_logloss <- function() {
 }
 
 p_logloss<- envAdderNN_logloss()
-t1_logloss <- xegaRun(penv = p_logloss, generations = 1000, popsize = 100, 
+t1_logloss <- xegaRun(penv = p_logloss, generations = 1000, popsize = 250, 
               evalmethod = "Deterministic", max = FALSE, verbose = 2)
 
 printNNSolution(t1_logloss$solution$phenotype)
@@ -240,7 +245,7 @@ envXORNN231_logloss<-function()
 p_xor_logloss<-envXORNN231_logloss()
 
 # Run GA
-t1_xor_logloss<-xegaRun(penv=p_xor_logloss, generations=500, popsize=100, 
+t1_xor_logloss<-xegaRun(penv=p_xor_logloss, generations=1000, popsize=250, 
             evalmethod="Deterministic",  
             max=FALSE, verbose=2)
 
