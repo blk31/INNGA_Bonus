@@ -260,39 +260,60 @@ cat("Fitness:", t1_xor_logloss$solution$fitness, "Better than 0.5? \n")
 s1<-NNXOR231(t1_xor_logloss$solution$phenotype, xorData)>0.5
 print(s1)
 
+##===================================Topology  =============================================================================
+
+# Full Adder more complex problem. Theoretically two hidden layers would be better because then you could model sum as two consecutive XOR functions
+# first checking that sum is only one if one or three inputs are one. To keep to the implemantation we have added a lot more neurons to adjust for the complexity
+# Unfortunately even with top = (3, 25, 2) we could not get a perfect result. The hardest to get is the case when all 3 inputs are 1.
+# Everything else works fine
 
 ##===================================Compare the resullts =============================================================================
 
-# Full adder with r2: 
+
+
+# XOR mit negativem Log-Likelihood (NLL):
+# Vorhersagen:
+# [1,] FALSE  → 0
+# [2,]  TRUE  → 1
+# [3,]  TRUE  → 1
+# [4,] FALSE  → 0
 #
-#1,] FALSE FALSE
-#[2,]  TRUE FALSE
-#[3,]  TRUE FALSE
-#[4,] FALSE  TRUE
-#[5,]  TRUE FALSE
-#6,] FALSE  TRUE
-#[7,] FALSE  TRUE
-#[8,] FALSE  TRUE
-#
-#
-#Full adder with neg. log likelihood
-#
-#
-#FALSE FALSE
-#[2,]  TRUE FALSE
-#[3,]  TRUE FALSE
-#[4,] FALSE  TRUE
-#[5,]  TRUE FALSE
-#[6,] FALSE  TRUE
-#[7,]  TRUE  TRUE
-#[8,] FALSE  TRUE
+# Alle 4 Vorhersagen stimmen exakt mit der XOR-Wahrheitstabelle überein. Das Netzwerk hat die XOR-Logik erfolgreich gelernt. => Perfekte Klassifikation
+
+# Bewertung von R2
+# Vorhersagen:
+# [1,] FALSE FALSE
+# [2,]  TRUE FALSE
+# [3,]  TRUE FALSE
+# [4,] FALSE  TRUE
+# [5,]  TRUE FALSE
+# [6,] FALSE  TRUE
+# [7,] FALSE  TRUE
+# [8,] FALSE  TRUE
 #
 #
-#] FALSE
-#[2,]  TRUE
-#[3,]  TRUE
-#[4,] FALSE
+# - 6 von 8 Vorhersagen korrekt
+# - Fehler bei Zeile 7 (Summe falsch) und evtl. Zeile 8 (Summe falsch)
+
+
+#  Bewertung neg Log-Likelihood
+# Vorhersagen:
+# [1,] FALSE FALSE
+# [2,]  TRUE FALSE
+# [3,]  TRUE FALSE
+# [4,] FALSE  TRUE
+# [5,]  TRUE FALSE
+# [6,] FALSE  TRUE
+# [7,]  TRUE  TRUE
+# [8,] FALSE  TRUE
 #
+# - 7 von 8 Vorhersagen korrekt
+# - Fehler bei Zeile 8 (Summe falsch)
 #
-#
-#
+# Zusammenfassung:
+# - XOR wird perfekt gelöst, egal ob mit R² oder NLL.
+# - R2 → 6/8 korrekt
+# - NLL → 7/8 korrekt
+# - NLL Klassifiziert hier besser als R2. Full adder ist komplexer als XOR, weswegen hier ein Unterschied deutlich wird
+# ----------------------------------------------------------
+
